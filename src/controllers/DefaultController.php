@@ -1,7 +1,12 @@
 <?php
 /**
+ * Copyright (c) 2019. Grupo Smart (Spain)
+ *
+ * This software is protected under Spanish law. Any distribution of this software
+ * will be prosecuted.
  *
  * Developed by Waizabú <code@waizabu.com>
+ * Updated by: erosdelalamo on 3/7/2019
  *
  *
  */
@@ -11,7 +16,7 @@ namespace eseperio\shortener\controllers;
 
 use eseperio\shortener\ShortenerModule;
 use yii\web\NotFoundHttpException;
-use yii\helpers\Url;
+
 /**
  * Class DefaultController
  * @package eseperio\shortener\controllers
@@ -30,14 +35,8 @@ class DefaultController extends \yii\web\Controller
         $module = \Yii::$app->getModule('shortener');
         /* @var $module ShortenerModule */
 
-        $model = $module->expand($id,true);
-
-        if(!empty($model)) {
-            \Yii::$app->request->setBodyParams(
-                $model->params);
-            list($first) = \Yii::$app->createController('reports/' . $model->use_module);
-            return $first->actionIndex();
-        }
+        if($url= $module->expand($id))
+            return $this->redirect($url);
 
         throw new NotFoundHttpException();
     }
