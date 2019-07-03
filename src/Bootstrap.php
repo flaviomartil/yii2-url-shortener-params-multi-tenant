@@ -1,7 +1,12 @@
 <?php
 /**
+ * Copyright (c) 2019. Grupo Smart (Spain)
+ *
+ * This software is protected under Spanish law. Any distribution of this software
+ * will be prosecuted.
  *
  * Developed by Waizabú <code@waizabu.com>
+ * Updated by: erosdelalamo on 3/7/2019
  *
  *
  */
@@ -22,17 +27,17 @@ class Bootstrap implements BootstrapInterface
      */
     public function bootstrap($app)
     {
-        if (\Yii::$app->hasModule('shortener')){
-            if ($app instanceof \yii\web\Application) {
+        if (\Yii::$app->hasModule('shortener'))
+            if ($app instanceof WebApplication) {
                 $this->initUrlRoutes($app);
             }
-        }
     }
 
-    protected function initUrlRoutes(\yii\web\Application $application)
+    protected function initUrlRoutes(WebApplication $application)
     {
-        $module = $application->getModule('shortener');
-        /* @var $module ShortenerModule */
-        $application->urlManager->addRules($module->urlConfig);
+        $application->urlManager->addRules([
+            '<id:\d+>' => 'post/view',
+
+        ]);
     }
 }

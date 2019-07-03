@@ -1,7 +1,12 @@
 <?php
 /**
+ * Copyright (c) 2019. Grupo Smart (Spain)
+ *
+ * This software is protected under Spanish law. Any distribution of this software
+ * will be prosecuted.
  *
  * Developed by Waizabú <code@waizabu.com>
+ * Updated by: erosdelalamo on 3/7/2019
  *
  *
  */
@@ -10,7 +15,6 @@ namespace eseperio\shortener\models;
 
 use eseperio\shortener\ShortenerModule;
 use yii\behaviors\SluggableBehavior;
-use Yii;
 
 /**
  * This is the model class for table "yii2_shortener".
@@ -18,6 +22,7 @@ use Yii;
  * @property int $id
  * @property string $url
  * @property string $shortened
+ * @property int $valid_until
  */
 class Shortener extends \yii\db\ActiveRecord
 {
@@ -26,18 +31,18 @@ class Shortener extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return Yii::$app->params['databaseSchema']. '.encurtador_link';
+        return 'yii2_shortener';
     }
 
     /**
      * @param $event
      * @return string
      */
-    public static function getSlugValue($event)
+    public static function getSlugValue($baseSlug, $iteration, $model)
     {
         $module = \Yii::$app->getModule('shortener');
 
-        /* @var $module ShortenerModule */
+        /* @var $module ShortenerModule\ */
         return $module->getShortId();
     }
 
@@ -47,12 +52,10 @@ class Shortener extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['created_on'], 'integer'],
-            [['url'], 'string'],
-            [['shortened'], 'string'],
-            [['use_module'], 'string'],
+            [['valid_until'], 'integer'],
+            [['url'], 'string', 'max' => 256],
+            [['shortened'], 'string', 'max' => 16],
             [['shortened'], 'unique'],
-            [['params'], 'safe'],
         ];
     }
 
@@ -65,7 +68,7 @@ class Shortener extends \yii\db\ActiveRecord
             'id' => 'ID',
             'url' => 'Url',
             'shortened' => 'Shortened',
-            'params' => "Parameters"
+            'valid_until' => 'Valid Until',
         ];
     }
 
@@ -77,9 +80,9 @@ class Shortener extends \yii\db\ActiveRecord
         return [
             'sluggable' => [
                 'class' => SluggableBehavior::class,
-                'slugAttribute' => 'shortened',
+                'attribute' => 'shortened',
                 'ensureUnique' => true,
-                'value' => [$this, 'getSlugValue']
+                'uniqueSlugGenerator' => [$this, 'getSlugValue']
             ]
         ];
     }
