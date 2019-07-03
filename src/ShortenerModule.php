@@ -1,7 +1,12 @@
 <?php
 /**
+ * Copyright (c) 2019. Grupo Smart (Spain)
+ *
+ * This software is protected under Spanish law. Any distribution of this software
+ * will be prosecuted.
  *
  * Developed by Waizabú <code@waizabu.com>
+ * Updated by: erosdelalamo on 3/7/2019
  *
  *
  */
@@ -14,82 +19,53 @@ use yii\base\Module;
 use yii\db\Expression;
 use yii\helpers\Url;
 
-
-/**
- * Class ShortenerModule
- * @package eseperio\shortener
- */
 class ShortenerModule extends Module
 {
 
+//        $options="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
     /**
-     *
      * Must have a lenght of 61
-     * Default is ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789 in random order
      * @var string
      */
     public $options = "NkAXITYvw3iObfKEaoeCUxqm2Dnrugl9PthVSM8yc7GQdBJHW6Lz4ZsjR15pF";
-
-
-    /**
-     * @var array
-     */
-    public $urlConfig = [
-        '<id:[\d\w]{16}>' => "/shortener/default/parse",
-    ];
 
     /**
      * @param $id
      * @return mixed|string the url
      */
-    public function expand($params,$searchId = false, $module = null)
+    public function expand($id)
     {
-        if (isset($params['_csrf'])) {
-            unset($params['_csrf']);
+        $model = Shortener::find()
+            ->where(['shortened' => (new Expression("BINARY('$id')"))])
+            ->one();
+
+        if (!empty($model)) {
+//Delete record if is not valid anymore.
+            if (!is_null($model->valid_until) && time() > $model->valid_until) {
+                $model->delete();
+            } else {
+                return $model->url;
+            }
         }
 
-        $query = $searchId ? ['shortened' => $params] : ['params' => json_encode($params)];
-        $model = Shortener::find()
-            ->where($query)
-            ->one();
-        return $model;
+        return false;
+
     }
 
     /**
      * @param $url      string|array It accepts any url format allowed by Yii2
      * @param $lifetime integer Time in seconds that the links must be available
      */
-    public function short($url = null, $params = null, $module = null)
+    public function short($url, $lifetime)
     {
-        if (isset($params['_csrf'])) {
-            unset($params['_csrf']);
-        }
-
-        $params = json_encode($params);
-        $model = Shortener::find()
-            ->where(['params' => $params])
-            ->one();
-        if (empty($model)) {
-            $model = new Shortener();
-
-            if (!empty ($params)) {
-                $model->params = $params;
-            }
-
-            $model->use_module = !empty($module) ? $module : null;
-            $model->url = $url;
-            if ($model->save())
-                return $model;
-
-            return false;
-        }
-
+        $model = new Shortener();
+        $model->setAttributes([
+            'url' => Url::to($url),
+            'valid_until' => empty($lifetime) ? null : time() + $lifetime
+        ]);
     }
 
 
-    /**
-     * @return string
-     */
     public function getShortId()
     {
         return $this->generateShortId();
@@ -100,8 +76,21 @@ class ShortenerModule extends Module
      */
     private function generateShortId()
     {
-        $uuid = \thamtech\uuid\helpers\UuidHelper::uuid();
-         return $uuid;
+//        $options="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
+//        Shuffled
+        $id = [];
+        $monthYear = +date('y') + +date('M');
+        $dayHour = +date('j') + +date('G');
+        $id = [
+            $this->options[$monthYear],
+            $this->options[$dayHour],
+            $this->options[+date('i')],
+            $this->options[+date('s')],
+            $this->options[+date('s')],
+        ];
+
+        return join("", $id);
+
 
     }
 }
