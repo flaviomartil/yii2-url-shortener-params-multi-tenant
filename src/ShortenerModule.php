@@ -34,7 +34,7 @@ class ShortenerModule extends Module
      * @var array
      */
     public $urlConfig = [
-        '<id:[\d\w]{4}>' => "/shortener/default/parse",
+        '<id:[\d\w]{16}>' => "/shortener/default/parse",
     ];
 
     /**
@@ -43,6 +43,10 @@ class ShortenerModule extends Module
      */
     public function expand($params,$searchId = false, $module = null)
     {
+        if (isset($params['_csrf'])) {
+            unset($params['_csrf']);
+        }
+
         $query = $searchId ? ['shortened' => $params] : ['params' => json_encode($params)];
         $model = Shortener::find()
             ->where($query)
@@ -54,8 +58,12 @@ class ShortenerModule extends Module
      * @param $url      string|array It accepts any url format allowed by Yii2
      * @param $lifetime integer Time in seconds that the links must be available
      */
-    public function short($params = null, $module = null)
+    public function short($url = null, $params = null, $module = null)
     {
+        if (isset($params['_csrf'])) {
+            unset($params['_csrf']);
+        }
+
         $params = json_encode($params);
         $model = Shortener::find()
             ->where(['params' => $params])
@@ -63,16 +71,12 @@ class ShortenerModule extends Module
         if (empty($model)) {
             $model = new Shortener();
 
-//            $model->setAttributes([
-//                'url' => Url::to($url),
-//            ]);
-
             if (!empty ($params)) {
                 $model->params = $params;
             }
 
             $model->use_module = !empty($module) ? $module : null;
-
+            $model->url = $url;
             if ($model->save())
                 return $model;
 
@@ -95,17 +99,6 @@ class ShortenerModule extends Module
      */
     private function generateShortId()
     {
-        $monthYear = +date('y') + +date('n');
-        $dayHour = +date('j') + +date('G');
-        $id = [
-            $this->options[$monthYear],
-            $this->options[$dayHour],
-            $this->options[+date('s')],
-            $this->options[+date('i')],
-        ];
-
-        return join("", $id);
-
 
     }
 }

@@ -33,8 +33,10 @@ class DefaultController extends \yii\web\Controller
         $model = $module->expand($id,true);
 
         if(!empty($model)) {
-            \Yii::$app->session->set($model->use_module,$model->params);
-            return $this->redirect($model->url);
+            \Yii::$app->request->setBodyParams(
+                $model->params);
+            list($first) = \Yii::$app->createController('reports/' . $model->use_module);
+            return $first->actionIndex();
         }
 
         throw new NotFoundHttpException();
