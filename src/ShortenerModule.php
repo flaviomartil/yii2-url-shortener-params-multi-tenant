@@ -34,48 +34,51 @@ class ShortenerModule extends Module
      * @var array
      */
     public $urlConfig = [
-        '<id:[\d\w]{4}>' => 'shortener/default/parse',
+        '<id:[\d\w]{4}>' => "/shortener/default/parse",
     ];
 
     /**
      * @param $id
      * @return mixed|string the url
      */
-    public function expand($id)
+    public function expand($params,$searchId = false, $module = null)
     {
+        $query = $searchId ? ['shortened' => $params] : ['params' => json_encode($params)];
         $model = Shortener::find()
-            ->where(['shortened' => (new Expression("BINARY('$id')"))])
+            ->where($query)
             ->one();
-
-        if (!empty($model)) {
-//Delete record if is not valid anymore.
-            if (!is_null($model->valid_until) && time() > $model->valid_until) {
-                $model->delete();
-            } else {
-                return $model->url;
-            }
-        }
-
-        return false;
-
+        return $model;
     }
 
     /**
      * @param $url      string|array It accepts any url format allowed by Yii2
      * @param $lifetime integer Time in seconds that the links must be available
      */
-    public function short($url, $lifetime = null)
+    public function short($params = null, $module = null)
     {
-        $model = new Shortener();
-        $model->setAttributes([
-            'url' => Url::to($url),
-            'valid_until' => empty($lifetime) ? null : time() + $lifetime
-        ]);
+        $params = json_encode($params);
+        $model = Shortener::find()
+            ->where(['params' => $params])
+            ->one();
+        if (empty($model)) {
+            $model = new Shortener();
 
-        if ($model->save())
-            return $model->shortened;
+//            $model->setAttributes([
+//                'url' => Url::to($url),
+//            ]);
 
-        return false;
+            if (!empty ($params)) {
+                $model->params = $params;
+            }
+
+            $model->use_module = !empty($module) ? $module : null;
+
+            if ($model->save())
+                return $model;
+
+            return false;
+        }
+
     }
 
 
@@ -92,15 +95,17 @@ class ShortenerModule extends Module
      */
     private function generateShortId()
     {
-        $date = new \DateTime();
-        $monthYear = $date->format('y') + $date->format('n');
-        $dayHour = $date->format('j') + $date->format('G');
+        $monthYear = +date('y') + +date('n');
+        $dayHour = +date('j') + +date('G');
         $id = [
             $this->options[$monthYear],
             $this->options[$dayHour],
-            $this->options[array_sum(mb_str_split($date->format('u')))],
-            $this->options[$date->format('s')],
+            $this->options[+date('s')],
+            $this->options[+date('i')],
         ];
+
         return join("", $id);
+
+
     }
 }

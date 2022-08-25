@@ -10,6 +10,7 @@ namespace eseperio\shortener\models;
 
 use eseperio\shortener\ShortenerModule;
 use yii\behaviors\SluggableBehavior;
+use Yii;
 
 /**
  * This is the model class for table "yii2_shortener".
@@ -17,7 +18,6 @@ use yii\behaviors\SluggableBehavior;
  * @property int $id
  * @property string $url
  * @property string $shortened
- * @property int $valid_until
  */
 class Shortener extends \yii\db\ActiveRecord
 {
@@ -26,14 +26,14 @@ class Shortener extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'yii2_shortener';
+        return Yii::$app->params['databaseSchema']. '.encurtador_link';
     }
 
     /**
      * @param $event
      * @return string
      */
-    public static function getSlugValue($event = null)
+    public static function getSlugValue($event)
     {
         $module = \Yii::$app->getModule('shortener');
 
@@ -47,10 +47,12 @@ class Shortener extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['valid_until'], 'integer'],
-            [['url'], 'string', 'max' => 256],
+            [['created_on'], 'integer'],
+            [['url'], 'string'],
             [['shortened'], 'string', 'max' => 16],
+            [['use_module'], 'string'],
             [['shortened'], 'unique'],
+            [['params'], 'safe'],
         ];
     }
 
@@ -63,7 +65,7 @@ class Shortener extends \yii\db\ActiveRecord
             'id' => 'ID',
             'url' => 'Url',
             'shortened' => 'Shortened',
-            'valid_until' => 'Valid Until',
+            'params' => "Parameters"
         ];
     }
 
@@ -77,9 +79,6 @@ class Shortener extends \yii\db\ActiveRecord
                 'class' => SluggableBehavior::class,
                 'slugAttribute' => 'shortened',
                 'ensureUnique' => true,
-                'uniqueSlugGenerator' => function ($baseSlug, $iteration, $owner) {
-                    return $owner->getSlugValue();
-                },
                 'value' => [$this, 'getSlugValue']
             ]
         ];
