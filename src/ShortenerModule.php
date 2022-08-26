@@ -14,6 +14,7 @@ use yii\base\Module;
 use yii\db\Expression;
 use yii\helpers\Url;
 
+
 /**
  * Class ShortenerModule
  * @package eseperio\shortener
@@ -49,9 +50,13 @@ class ShortenerModule extends Module
 
         $query = $searchId ? ['shortened' => $params] : ['params' => json_encode($params)];
         $model = Shortener::find()
-            ->where($query)
-            ->one();
-        return $model;
+            ->where($query);
+
+              if (!empty($module) && !in_array('params',$query)) {
+                  $model->AndFilterWhere(['use_module' => $module]);
+              }
+
+        return $model->one();
     }
 
     /**
@@ -65,17 +70,25 @@ class ShortenerModule extends Module
         }
 
         $params = json_encode($params);
+
         $model = Shortener::find()
-            ->where(['params' => $params])
-            ->one();
+            ->where(['params' => $params]);
+
+
+        if (!empty($module)) {
+           $model->AndFilterWhere(['use_module' => $module]);
+        }
+
+        $model = $model->one();
+
         if (empty($model)) {
             $model = new Shortener();
+            $model->use_module = !empty($module) ? $module : null;
 
             if (!empty ($params)) {
                 $model->params = $params;
             }
 
-            $model->use_module = !empty($module) ? $module : null;
             $model->url = $url;
             if ($model->save())
                 return $model;
@@ -99,6 +112,8 @@ class ShortenerModule extends Module
      */
     private function generateShortId()
     {
+        $uuid = \thamtech\uuid\helpers\UuidHelper::uuid();
+         return $uuid;
 
     }
 }

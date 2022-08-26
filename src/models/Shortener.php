@@ -49,7 +49,7 @@ class Shortener extends \yii\db\ActiveRecord
         return [
             [['created_on'], 'integer'],
             [['url'], 'string'],
-            [['shortened'], 'string', 'max' => 16],
+            [['shortened'], 'string'],
             [['use_module'], 'string'],
             [['shortened'], 'unique'],
             [['params'], 'safe'],
@@ -65,7 +65,8 @@ class Shortener extends \yii\db\ActiveRecord
             'id' => 'ID',
             'url' => 'Url',
             'shortened' => 'Shortened',
-            'params' => "Parameters"
+            'params' => "Parameters",
+            'use_module' => "Use module",
         ];
     }
 

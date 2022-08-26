@@ -39,6 +39,6 @@ class DefaultController extends \yii\web\Controller
             return $first->actionIndex();
         }
 
-        throw new NotFoundHttpException();
+        throw new NotFoundHttpException('Esse link não foi encontrado, por favor verifique o endereço digitado e tente novamente.');
     }
 }
