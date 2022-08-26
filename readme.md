@@ -1,6 +1,15 @@
-# Yii2 url shortener.
+# Yii2 url shortener with multi Tenant.
 
-I´ve created this library since Google closed his one.
+I´ve forked this for https://github.com/Eseperio/yii2-url-shortener
+
+Its a particular features i needed.
+And added some features like:
+UUID
+Modular Assets
+Redirect to controller specific using modular.
+Remove time_until.
+Check if exist a short link with same params before create another.
+And use MultiTenant.
 
 
 ## Installation
@@ -64,3 +73,4 @@ Yii::$app->getModule('shortener')->expand('link id')
 Module includes a controller to handle redirections. The only thing you need, to make it work, it is create a link to your app domain, followed by the short id of url.
 
 `http://myapp.tld/gGyU`
+
