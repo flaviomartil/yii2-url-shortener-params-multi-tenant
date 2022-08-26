@@ -1,5 +1,5 @@
 {
-    "name": "eseperio/yii2-url-shortener",
+    "name": "flavio-esesperio/yii2-url-shortener-params-multi-tenant",
     "description": "An extension to work with own shortened urls",
     "type": "yii2-extension",
     "require": {
@@ -13,12 +13,12 @@
         }
     ],
     "extra": {
-        "bootstrap": "eseperio\\shortener\\Bootstrap"
+        "bootstrap": "flavio-esesperio\\shortener\\Bootstrap"
     },
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "eseperio\\shortener\\": "./src/"
+            "flavio-esesperio\\shortener\\": "./src/"
         }
     }
 }
