@@ -1,0 +1,24 @@
+{
+    "name": "eseperio/yii2-url-shortener",
+    "description": "An extension to work with own shortened urls",
+    "type": "yii2-extension",
+    "require": {
+        "yiisoft/yii2": "^2.0@dev"
+    },
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "E.Alamo",
+            "email": "admin@example.com"
+        }
+    ],
+    "extra": {
+        "bootstrap": "eseperio\\shortener\\Bootstrap"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "eseperio\\shortener\\": "./src/"
+        }
+    }
+}
